@@ -17,25 +17,31 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // BrokerSpec defines the desired state of Broker
 type BrokerSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	//
+	// +kubebuilder:validation:Type:string
+	// +kubebuilder:validation:Type:Required
+	Memory resource.Quantity `json:"memory"`
 
-	// Foo is an example field of Broker. Edit broker_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// +kubebuilder:validation:Type:string
+	// +kubebuilder:validation:Type:Required
+	Cores resource.Quantity `json:"cores"`
+
+	// +kubebuilder:validation:Type:string
+	// +kubebuilder:validation:Type:Required
+	StorageSize resource.Quantity `json:"storageSize"`
+
+	Config map[string]string `json:"config,omitempty"`
 }
 
 // BrokerStatus defines the observed state of Broker
 type BrokerStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
 //+kubebuilder:object:root=true
