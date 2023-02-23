@@ -1,0 +1,19 @@
+domain: oliversmith.io
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: eclipse-mosquitto-mqtt-broker-operator
+repo: github.com/github.com/slivero/eclipse-mosquitto-mqtt-broker-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: oliversmith.io
+  group: mosquitto.oliversmith.io
+  kind: Broker
+  path: github.com/github.com/slivero/eclipse-mosquitto-mqtt-broker-operator/api/v1alpha1
+  version: v1alpha1
+version: "3"
