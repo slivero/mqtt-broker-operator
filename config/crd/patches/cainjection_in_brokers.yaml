@@ -4,4 +4,4 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: $(CERTIFICATE_NAMESPACE)/$(CERTIFICATE_NAME)
-  name: brokers.mosquitto.oliversmith.io.oliversmith.io
+  name: brokers.mosquitto.oliversmith.io

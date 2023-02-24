@@ -30,7 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	mosquittooliversmithiov1alpha1 "github.com/github.com/slivero/eclipse-mosquitto-mqtt-broker-operator/api/v1alpha1"
+	mosquittooliversmithiov1alpha1 "github.com/slivero/mqtt-broker-operator/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 

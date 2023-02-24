@@ -31,8 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	mosquittooliversmithiov1alpha1 "github.com/github.com/slivero/eclipse-mosquitto-mqtt-broker-operator/api/v1alpha1"
-	"github.com/github.com/slivero/eclipse-mosquitto-mqtt-broker-operator/controllers"
+	mosquittooliversmithiov1alpha1 "github.com/slivero/mqtt-broker-operator/api/v1alpha1"
+	"github.com/slivero/mqtt-broker-operator/controllers/broker"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -89,7 +89,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.BrokerReconciler{
+	if err = (&broker.BrokerReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

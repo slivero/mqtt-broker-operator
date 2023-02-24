@@ -6,8 +6,8 @@ metadata:
     app.kubernetes.io/name: namespace
     app.kubernetes.io/instance: system
     app.kubernetes.io/component: manager
-    app.kubernetes.io/created-by: eclipse-mosquitto-mqtt-broker-operator
-    app.kubernetes.io/part-of: eclipse-mosquitto-mqtt-broker-operator
+    app.kubernetes.io/created-by: mqtt-broker-operator
+    app.kubernetes.io/part-of: mqtt-broker-operator
     app.kubernetes.io/managed-by: kustomize
   name: system
 ---
@@ -21,8 +21,8 @@ metadata:
     app.kubernetes.io/name: deployment
     app.kubernetes.io/instance: controller-manager
     app.kubernetes.io/component: manager
-    app.kubernetes.io/created-by: eclipse-mosquitto-mqtt-broker-operator
-    app.kubernetes.io/part-of: eclipse-mosquitto-mqtt-broker-operator
+    app.kubernetes.io/created-by: mqtt-broker-operator
+    app.kubernetes.io/part-of: mqtt-broker-operator
     app.kubernetes.io/managed-by: kustomize
 spec:
   selector:
@@ -71,6 +71,7 @@ spec:
         args:
         - --leader-elect
         image: controller:latest
+        imagePullPolicy: IfNotPresent 
         name: manager
         securityContext:
           allowPrivilegeEscalation: false

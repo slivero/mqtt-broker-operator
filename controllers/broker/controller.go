@@ -14,17 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package broker
 
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	mosquittooliversmithiov1alpha1 "github.com/github.com/slivero/eclipse-mosquitto-mqtt-broker-operator/api/v1alpha1"
+	mqttv1alpha1 "github.com/slivero/mqtt-broker-operator/api/v1alpha1"
+	"github.com/slivero/mqtt-broker-operator/controllers/broker/resources"
 )
 
 // BrokerReconciler reconciles a Broker object
@@ -33,9 +35,9 @@ type BrokerReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=mosquitto.oliversmith.io.oliversmith.io,resources=brokers,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=mosquitto.oliversmith.io.oliversmith.io,resources=brokers/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=mosquitto.oliversmith.io.oliversmith.io,resources=brokers/finalizers,verbs=update
+//+kubebuilder:rbac:groups=mosquitto.oliversmith.io,resources=brokers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=mosquitto.oliversmith.io,resources=brokers/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=mosquitto.oliversmith.io,resources=brokers/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -49,7 +51,24 @@ type BrokerReconciler struct {
 func (r *BrokerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	instance := &mqttv1alpha1.Broker{}
+
+	err := r.Client.Get(ctx, req.NamespacedName, instance)
+
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// If the Broker isn't found then it must have been deleted so we don't need to do anything else
+			// All child resources are cleaned up automatically
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
+	}
+
+	err = resources.EnsurePod(*instance)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }
@@ -57,6 +76,6 @@ func (r *BrokerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 // SetupWithManager sets up the controller with the Manager.
 func (r *BrokerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&mosquittooliversmithiov1alpha1.Broker{}).
+		For(&mqttv1alpha1.Broker{}).
 		Complete(r)
 }

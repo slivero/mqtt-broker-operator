@@ -1,12 +1,12 @@
-apiVersion: mosquitto.oliversmith.io.oliversmith.io/v1alpha1
+apiVersion: mosquitto.oliversmith.io/v1alpha1
 kind: Broker
 metadata:
   labels:
     app.kubernetes.io/name: broker
     app.kubernetes.io/instance: broker-sample
-    app.kubernetes.io/part-of: eclipse-mosquitto-mqtt-broker-operator
+    app.kubernetes.io/part-of: mqtt-broker-operator
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/created-by: eclipse-mosquitto-mqtt-broker-operator
+    app.kubernetes.io/created-by: mqtt-broker-operator
   name: broker-sample
 spec:
   # TODO(user): Add fields here

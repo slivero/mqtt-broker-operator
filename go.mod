@@ -1,4 +1,4 @@
-module github.com/github.com/slivero/eclipse-mosquitto-mqtt-broker-operator
+module github.com/slivero/mqtt-broker-operator
 
 go 1.19
 
