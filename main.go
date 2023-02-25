@@ -92,6 +92,11 @@ func main() {
 	if err = (&broker.BrokerReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Log: ctrl.Log.WithName("Broker").WithValues(
+			"group", "mosquitto.oliversmith.io",
+			"kind", "Broker",
+			"controller", "broker",
+		),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Broker")
 		os.Exit(1)

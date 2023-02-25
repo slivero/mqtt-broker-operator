@@ -90,7 +90,6 @@ func (in *BrokerSpec) DeepCopyInto(out *BrokerSpec) {
 	*out = *in
 	out.Memory = in.Memory.DeepCopy()
 	out.Cores = in.Cores.DeepCopy()
-	out.StorageSize = in.StorageSize.DeepCopy()
 	if in.Config != nil {
 		in, out := &in.Config, &out.Config
 		*out = make(map[string]string, len(*in))

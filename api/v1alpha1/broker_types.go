@@ -32,10 +32,6 @@ type BrokerSpec struct {
 	// +kubebuilder:validation:Type:Required
 	Cores resource.Quantity `json:"cores"`
 
-	// +kubebuilder:validation:Type:string
-	// +kubebuilder:validation:Type:Required
-	StorageSize resource.Quantity `json:"storageSize"`
-
 	Config map[string]string `json:"config,omitempty"`
 }
 

@@ -25,19 +25,27 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/go-logr/logr"
 	mqttv1alpha1 "github.com/slivero/mqtt-broker-operator/api/v1alpha1"
 	"github.com/slivero/mqtt-broker-operator/controllers/broker/resources"
+	"github.com/slivero/mqtt-broker-operator/controllers/common"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // BrokerReconciler reconciles a Broker object
 type BrokerReconciler struct {
 	client.Client
+	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
 
 //+kubebuilder:rbac:groups=mosquitto.oliversmith.io,resources=brokers,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=mosquitto.oliversmith.io,resources=brokers/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=mosquitto.oliversmith.io,resources=brokers/finalizers,verbs=update
+//+kubebuilder:rbac:groups=*,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apps,resources=deployments;configmaps,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -52,7 +60,6 @@ func (r *BrokerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	_ = log.FromContext(ctx)
 
 	instance := &mqttv1alpha1.Broker{}
-
 	err := r.Client.Get(ctx, req.NamespacedName, instance)
 
 	if err != nil {
@@ -65,7 +72,14 @@ func (r *BrokerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, err
 	}
 
-	err = resources.EnsurePod(*instance)
+	r12nContext := r.newContext(req, instance, ctx)
+
+	err = resources.EnsureConfigMap(r12nContext, *instance)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	err = resources.EnsureDeployment(r12nContext, *instance)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
@@ -77,5 +91,21 @@ func (r *BrokerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 func (r *BrokerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&mqttv1alpha1.Broker{}).
+		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.ConfigMap{}).
 		Complete(r)
+}
+
+func (r *BrokerReconciler) newContext(req ctrl.Request, cr *mqttv1alpha1.Broker, ctx context.Context) common.R12nContext {
+	return common.R12nContext{
+		Context: ctx,
+		Client:  r.Client,
+		Log: r.Log.WithValues(
+			"requestName", req.Name,
+			"requestNamespace", req.Namespace,
+		),
+		SetControllerReference: func(controlled metav1.Object) error {
+			return ctrl.SetControllerReference(cr, controlled, r.Scheme)
+		},
+	}
 }
