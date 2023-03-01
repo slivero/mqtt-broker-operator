@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION := 0.0.$(shell date +%s)
+VERSION := 0.0.1
 
 # IMAGE_TAG_BASE defines the docker.io namespace and part of the image name for remote images.
 # This variable is used to construct full image tags for bundle and catalog images.
@@ -31,6 +31,11 @@ endif
 IMG ?= controller:${VERSION}
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.25.0
+
+KIND_CLUSTER_NAME := mqtt-broker-operator
+
+# Get platform
+PLATFORM := $(shell uname -s | tr A-Z a-z)
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -158,10 +163,12 @@ $(LOCALBIN):
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
+GINKGO ?= $(LOCALBIN)/ginkgo
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.10.0
+GINKGO_VERSION ?= v2.1.4
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -179,11 +186,21 @@ envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
+.PHONY: ginkgo
+ginkgo: $(GINKGO) ## Download ginkgo locally if necessary.
+$(GINKGO): $(LOCALBIN)
+	test -s $(LOCALBIN)/ginkgo|| GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION)
+
+.PHONY: test-e2e
+test-e2e: ginkgo
+	${GINKGO} ./test
+
+
 .PHONY: kind
 kind:
 ifeq (, $(shell which kind))
 	set -e;\
-	curl -Lo ./bin/kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64
+	curl -Lo ./bin/kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-${PLATFORM}-amd64
 	chmod +x ./bin/kind
 KIND=./bin/kind
 else
@@ -192,16 +209,15 @@ endif
 
 .PHONY: deploy-local-cluster
 deploy-local-cluster: kind
-	${KIND} create cluster --config=kind.yaml --name=mosquitto-operator
+	${KIND} create cluster --config=kind.yaml --name=${KIND_CLUSTER_NAME}
 
 .PHONY: cleanup-local-cluster
 cleanup-local-cluster:
-	${KIND} delete cluster --name=mosquitto-operator
+	${KIND} delete cluster --name=${KIND_CLUSTER_NAME}
 
 .PHONY: load-images
 load-images:
-	${KIND} --name=mosquitto-operator load docker-image ${IMG}
-
+	${KIND} --name=${KIND_CLUSTER_NAME} load docker-image ${IMG}
 
 .PHONY: local-build-and-deploy
 local-build-and-deploy: docker-build load-images deploy
